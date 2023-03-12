@@ -1,29 +1,26 @@
-use std::sync::mpsc;
-use std::thread;
-use std::time::Duration;
-use std::sync::Mutex;
 
-fn concurrent() {
-	let (tx, rx) = mpsc::channel();
+// use crate::mutex::mutex;
+//use crate::concurrent::concurrent1;
 
-	thread::spawn(move || {
-		let val = String::from("hi");
-		tx.send(val);
-		thread::sleep(Duration::from_secs(1));
-		let val = String::from("hi1");
-		tx.send(val).unwrap();
-		let val = String::from("hi2");
-		tx.send(val).unwrap();
-	});
+use std::rc::Rc;
 
-	for received in rx {
-		println!("Got : {}", received);
-	}
-}
+pub mod generics;
+pub mod mutex;
+pub mod concurrent;
+
+use crate::List::{Cons, Nil};
+
 fn main() {
-	// concurrent();
-	mutex();
+	//concurrent1();
+	// mutex();
+	//let user = Some(ShirtColor::Red);
+	//test();
+	let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+	let b = Cons(3, Rc::clone(&a));
+	let c = Cons(4, Rc::clone(&a));
+
 }
+
 
 fn statementVsExpression() {
 	let y = {
@@ -34,21 +31,19 @@ fn statementVsExpression() {
 	println!("y is {}", y);
 }
 
+#[test]
 fn test() {
 	let mut str = "   ";
 	let length = str.len();
 	println!("length is {}", length);
-	*str = "a";
+
+	let v1 = vec![1, 2, 3];
+	let v1_iter = v1.iter();
+	//assert_eq!(v1_iter.next(), Some(&1))
 }
 
-
-fn mutex() {
-	let m = Mutex::new(5);
-
-	{
-		let mut num = m.lock().unwrap();
-		*num = 6;
-	}
-
-	println!("m = {:?}", m)
+enum List {
+	Cons(i32, Rc<List>),
+	Nil,
 }
+
