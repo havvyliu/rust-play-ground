@@ -1,4 +1,3 @@
-
 // use crate::mutex::mutex;
 //use crate::concurrent::concurrent1;
 
@@ -22,7 +21,7 @@ fn main() {
 }
 
 
-fn statementVsExpression() {
+fn statement_vs_expression() {
 	let y = {
 		let x = 3;
 		x + 1
