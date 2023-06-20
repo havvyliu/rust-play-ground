@@ -1,5 +1,5 @@
-// use crate::mutex::mutex;
-//use crate::concurrent::concurrent1;
+use crate::mutex::mutex;
+use crate::concurrent::concurrent1;
 
 use std::rc::Rc;
 
@@ -9,15 +9,26 @@ pub mod concurrent;
 
 use crate::List::{Cons, Nil};
 
+struct WrappedVal<T> {
+    value: T,
+}
+
+impl<T> WrappedVal<T> {
+    fn get_value(&self) -> &T {
+        &self.value
+    }
+}
+
 fn main() {
-	//concurrent1();
+    let y = WrappedVal { value: "str"};
+    println!("{}", y.get_value());
+	// concurrent1();
 	// mutex();
 	//let user = Some(ShirtColor::Red);
 	//test();
 	let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
 	let b = Cons(3, Rc::clone(&a));
 	let c = Cons(4, Rc::clone(&a));
-
 }
 
 
