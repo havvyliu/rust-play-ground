@@ -4,8 +4,7 @@ mod dynamic;
 pub mod generics;
 pub mod mutex;
 pub mod concurrent;
-pub mod anagram;
-mod BinarySearch;
+mod exercism;
 
 use crate::List::{Cons, Nil};
 
