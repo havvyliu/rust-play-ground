@@ -1,3 +1,7 @@
+use std::fmt;
+use std::fmt::{Formatter};
+
+
 pub trait Messenger {
 	fn send(&self, msg: &str);
 }
@@ -8,7 +12,7 @@ pub struct LimitTracker<T: Messenger> {
 	max: usize,
 }
 
-impl<T> LimitTracker<T> 
+impl<T> LimitTracker<T>
 where 
 	T: Messenger, {
 
@@ -22,7 +26,7 @@ where
 
 	pub fn set_value(&mut self, value: usize) {
 		self.value = value;
-		let percentage = self.value / self.max;
+		let _percentage = self.value / self.max;
 		self.messenger.send("Current usage {percentage}");
 	}
 
@@ -32,6 +36,39 @@ where
 		&a
 	}
 }
+
+
+#[derive(PartialEq, Debug)]
+pub struct Clock {
+	hours: i32,
+	mins: i32,
+}
+
+impl fmt::Display for Clock {
+	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+		write!(f, "{:02}:{:02}", self.hours, self.mins)
+	}
+}
+
+impl Clock {
+	pub fn new(hours: i32, minutes: i32) -> Self {
+		let mut c = Clock {hours, mins: 0 };
+		c = c.add_minutes(minutes);
+		c
+	}
+
+	pub fn add_minutes(mut self, minutes: i32) -> Self {
+		let hours = self.hours;
+		let mut total_mins = hours * 60 + minutes;
+		if total_mins < 0 {
+			total_mins += (1 - total_mins / (24 * 60)) * 24 * 60
+		}
+		self.mins = total_mins % 60;
+		self.hours = total_mins / 60 % 24;
+		self
+	}
+}
+
 
 #[cfg(test)]
 mod tests {

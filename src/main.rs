@@ -1,11 +1,11 @@
-use crate::mutex::mutex;
-use crate::concurrent::concurrent1;
-
 use std::rc::Rc;
 
+mod dynamic;
 pub mod generics;
 pub mod mutex;
 pub mod concurrent;
+pub mod anagram;
+mod BinarySearch;
 
 use crate::List::{Cons, Nil};
 
@@ -29,8 +29,8 @@ fn main() {
 	let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
 	let b = Cons(3, Rc::clone(&a));
 	let c = Cons(4, Rc::clone(&a));
+	let d: &str;
 }
-
 
 fn statement_vs_expression() {
 	let y = {
