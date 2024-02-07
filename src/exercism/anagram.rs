@@ -18,11 +18,9 @@ fn same(word: &str, s: &str) -> bool {
     if w == s_lower {
         return false;
     } else {
-        unsafe {
-            w.sort();
-            s_lower.sort();
-            return w == s_lower;
-        }
+        w.sort();
+        s_lower.sort();
+        return w == s_lower;
     }
 }
 

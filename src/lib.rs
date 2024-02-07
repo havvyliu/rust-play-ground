@@ -29,12 +29,6 @@ where
 		let _percentage = self.value / self.max;
 		self.messenger.send("Current usage {percentage}");
 	}
-
-
-	fn test<'a>() -> &'a str {
-		let a = "test";
-		&a
-	}
 }
 
 

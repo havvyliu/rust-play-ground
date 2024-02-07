@@ -26,28 +26,19 @@ fn main() {
 	//let user = Some(ShirtColor::Red);
 	//test();
 	let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
-	let b = Cons(3, Rc::clone(&a));
-	let c = Cons(4, Rc::clone(&a));
-	let d: &str;
-}
-
-fn statement_vs_expression() {
-	let y = {
-		let x = 3;
-		x + 1
-	};
-
-	println!("y is {}", y);
+	let _b = Cons(3, Rc::clone(&a));
+	let _c = Cons(4, Rc::clone(&a));
+	let _d: &str;
 }
 
 #[test]
 fn test() {
-	let mut str = "   ";
+	let str = "   ";
 	let length = str.len();
 	println!("length is {}", length);
 
 	let v1 = vec![1, 2, 3];
-	let v1_iter = v1.iter();
+	let _v1_iter = v1.iter();
 	//assert_eq!(v1_iter.next(), Some(&1))
 }
 
