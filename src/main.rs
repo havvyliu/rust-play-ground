@@ -1,10 +1,12 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 mod dynamic;
 pub mod generics;
 pub mod mutex;
 pub mod concurrent;
-mod exercism;
+pub mod exercism;
+
 
 use crate::List::{Cons, Nil};
 
@@ -29,6 +31,26 @@ fn main() {
 	let _b = Cons(3, Rc::clone(&a));
 	let _c = Cons(4, Rc::clone(&a));
 	let _d: &str;
+
+
+
+
+	let mut x = Some(2);
+	let y = x.take();
+	let z = x.as_mut();
+	let d = 2;
+	assert_eq!(x, None);
+	assert_eq!(y, Some(2));
+}
+
+#[test]
+fn ref_rc_stuff() {
+	let a = Rc::new(RefCell::new("a".to_owned()));
+	let mut a_cloned = Rc::clone(&a);
+	let c = &mut a_cloned;
+	unsafe { (*a_cloned.as_ptr()).push('!'); }
+	a_cloned.borrow_mut().push('?');
+	println!("{:?}", a);
 }
 
 #[test]
