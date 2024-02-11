@@ -55,6 +55,15 @@ pub struct Iter<'a, T> {
     _marker: PhantomData<&'a T>,
 }
 
+impl<T> Drop for LinkedList<T> {
+
+    fn drop(&mut self) {
+        let mut cursor = self.cursor_back();
+        while cursor.cur.is_some() {
+            cursor.take();
+        };
+    }
+}
 
 impl<T> LinkedList<T> {
     pub fn new() -> Self {
@@ -130,14 +139,6 @@ impl<T> LinkedList<T> {
 // the cursor is expected to act as if it is at the position of an element
 // and it also has to work with and be able to insert into an empty list.
 impl<T> Cursor<'_, T> {
-    pub fn peek(&self) -> Option<&'_ T> {
-        match self.cur.as_ref() {
-            None => None,
-            Some(rc) => {
-                unsafe { (*rc.as_ptr()).val.as_ref() }
-            }
-        }
-    }
 
     /// Take a mutable reference to the current element
     pub fn peek_mut(&mut self) -> Option<&mut T> {
@@ -161,7 +162,7 @@ impl<T> Cursor<'_, T> {
     /// Move one position forward (towards the back) and
     /// return a reference to the new position
     #[allow(clippy::should_implement_trait)]
-    pub fn next(&mut self) -> Option<&mut T> {
+    pub fn prev(&mut self) -> Option<&mut T> {
         // If there is no current node, there is nothing to advance to.
         if self.cur.is_none() {
             return None;
@@ -188,7 +189,7 @@ impl<T> Cursor<'_, T> {
 
     /// Move one position backward (towards the front) and
     /// return a reference to the new position
-    pub fn prev(&mut self) -> Option<&mut T> {
+    pub fn next(&mut self) -> Option<&mut T> {
         if self.cur.is_none() {
             return None;
         }
@@ -212,31 +213,31 @@ impl<T> Cursor<'_, T> {
             Some(cur) => {
                 let prev = cur.borrow().prev.clone();
                 let next = cur.borrow().next.clone();
-                match prev.clone() {
-                    None => {
-                        if self.list.tail.is_some() && Rc::ptr_eq(&cur, self.list.tail.as_ref().unwrap()) {
-                            self.list.tail = None;
-                        }
-                    }
-                    Some(rc) => {
-                        rc.borrow_mut().next = next.clone();
-                        self.cur = Some(rc.clone());
-                        if Rc::ptr_eq(&cur, self.list.tail.as_ref().unwrap()) {
-                            self.list.tail = Some(rc);
-                        }
-                    }
-                };
-                match next {
+                match next.clone() {
                     None => {
                         if self.list.head.is_some() && Rc::ptr_eq(&cur, self.list.head.as_ref().unwrap()) {
                             self.list.head = None;
                         }
                     }
                     Some(rc) => {
-                        rc.borrow_mut().prev = prev;
+                        rc.borrow_mut().prev = prev.clone();
                         self.cur = Some(rc.clone());
                         if Rc::ptr_eq(&cur, self.list.head.as_ref().unwrap()) {
                             self.list.head = Some(rc);
+                        }
+                    }
+                };
+                match prev {
+                    None => {
+                        if self.list.tail.is_some() && Rc::ptr_eq(&cur, self.list.tail.as_ref().unwrap()) {
+                            self.list.tail = None;
+                        }
+                    }
+                    Some(rc) => {
+                        rc.borrow_mut().next = next;
+                        self.cur = Some(rc.clone());
+                        if Rc::ptr_eq(&cur, self.list.tail.as_ref().unwrap()) {
+                            self.list.tail = Some(rc);
                         }
                     }
                 };
@@ -256,14 +257,19 @@ impl<T> Cursor<'_, T> {
             None => {
                 self.cur = Some(new_link.clone());
                 self.list.head = Some(new_link.clone());
-                if self.list.tail.is_none() {self.list.tail = Some(new_link)}
+                if self.list.tail.is_none() {self.list.tail = Some(new_link.clone())};
+                if self.list.head.is_none() {self.list.head = Some(new_link)};
             }
             Some(old_link) => {
-                old_link.borrow_mut().prev = Some(new_link.clone());
                 new_link.borrow_mut().next = Some(old_link.clone());
-                if Rc::ptr_eq(old_link, self.list.head.as_ref().unwrap()) {
-                    self.list.head = Some(new_link);
+                if Rc::ptr_eq(&old_link.clone(), self.list.head.as_ref().unwrap()) {
+                    self.list.head = Some(new_link.clone());
+                };
+                if old_link.borrow_mut().prev.is_some() {
+                    new_link.borrow_mut().prev = old_link.borrow_mut().prev.clone();
+                    old_link.borrow_mut().prev.clone().unwrap().borrow_mut().next = Some(new_link.clone());
                 }
+                old_link.borrow_mut().prev = Some(new_link.clone());
             }
         }
         self.list.size += 1;
@@ -294,14 +300,19 @@ impl<T> Cursor<'_, T> {
             None => {
                 self.cur = Some(new_link.clone());
                 self.list.tail = Some(new_link.clone());
+                if self.list.tail.is_none() {self.list.tail = Some(new_link.clone())}
                 if self.list.head.is_none() {self.list.head = Some(new_link)}
             }
             Some(old_link) => {
-                old_link.borrow_mut().next = Some(new_link.clone());
                 new_link.borrow_mut().prev = Some(old_link.clone());
                 if Rc::ptr_eq(old_link, self.list.tail.as_ref().unwrap()) {
-                    self.list.tail = Some(new_link);
+                    self.list.tail = Some(new_link.clone());
                 }
+                if old_link.borrow_mut().next.is_some() {
+                    new_link.borrow_mut().next = old_link.borrow_mut().next.clone();
+                    old_link.borrow_mut().next.clone().unwrap().borrow_mut().prev = Some(new_link.clone());
+                }
+                old_link.borrow_mut().next = Some(new_link.clone());
             }
         }
         self.list.size += 1;
@@ -313,7 +324,16 @@ impl<'a, T> Iterator for Iter<'a, T> {
 
 
     fn next(&mut self) -> Option<&'a T> {
-        self.peek()
+        let to_return = self.peek();
+        match self.cur.clone() {
+            None => {
+                self.cur = None;
+            }
+            Some(rc) => {
+                self.cur = rc.borrow_mut().prev.clone();
+            }
+        };
+        to_return
     }
 }
 
