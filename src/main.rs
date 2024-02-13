@@ -64,6 +64,27 @@ fn test() {
 	//assert_eq!(v1_iter.next(), Some(&1))
 }
 
+
+macro_rules! calculate {
+    (eval $e:expr) => {
+        {
+            // let val: usize = $e; // Force types to be unsigned integers
+            println!("{} = {}", stringify!{$e}, $e as usize);
+        }
+    };
+}
+
+#[test]
+fn test_macro() {
+	calculate! {
+        eval 1 + 2 // hehehe `eval` is _not_ a Rust keyword!
+    }
+	calculate! {
+        eval (1 + 2) * (3 / 4)
+    }
+}
+
+
 enum List {
 	Cons(i32, Rc<List>),
 	Nil,
