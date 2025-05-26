@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 mod dynamic;
+mod decimal;
 pub mod generics;
 pub mod mutex;
 pub mod concurrent;
@@ -63,6 +64,35 @@ fn test() {
 	let _v1_iter = v1.iter();
 	//assert_eq!(v1_iter.next(), Some(&1))
 }
+
+
+#[test]
+fn test_iterator() {
+	let vec1 = vec![1, 2, 3];
+	let vec2 = vec![4, 5, 6];
+
+	let mut iter = vec1.iter();
+	println!("Find {:?} in vec1", iter.find(|&x| x == &2));
+}
+
+struct Point {
+	x: i32,
+	y: i32,
+}
+
+impl From<[i32; 2]> for Point{
+	fn from(value: [i32; 2]) -> Self {
+		Point { x: value[0], y: value[1] }
+	}
+}
+
+
+#[test]
+fn test_from() {
+	let arr = [1, 2];
+	let pt: Point = Point::from(arr);
+}
+
 
 
 macro_rules! calculate {
